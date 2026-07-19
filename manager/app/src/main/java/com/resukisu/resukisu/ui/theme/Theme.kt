@@ -52,6 +52,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.toArgb
@@ -587,10 +588,11 @@ fun Modifier.blurSource(): Modifier {
 
 /**
  * Render blur when backdrop available
+ * @param shape shape the blur is clipped to
  * @return modified modifier
  */
 @Composable
-fun Modifier.blurEffect(): Modifier {
+fun Modifier.blurEffect(shape: Shape = RectangleShape): Modifier {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return this
 
     return LocalBlurState.current?.let { backdrop ->
@@ -600,7 +602,7 @@ fun Modifier.blurEffect(): Modifier {
         this.then(
             Modifier.textureBlur(
                 backdrop = backdrop,
-                shape = RectangleShape,
+                shape = shape,
                 blurRadius = 25f,
                 colors = BlurColors(
                     blendColors = listOf(

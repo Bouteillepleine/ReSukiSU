@@ -225,37 +225,6 @@ fun HomePage(
                     }
 
                     // 警告信息
-                    if (BuildConfig.DEBUG) {
-                        WarningCard(
-                            message = stringResource(R.string.debug_version_notice),
-                            icon = {
-                                Icon(
-                                    imageVector = Icons.TwoTone.Error,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onErrorContainer,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                        )
-                    }
-
-                    if (!uiState.systemStatus.isOfficialSignature) {
-                        WarningCard(
-                            message = stringResource(
-                                R.string.unofficial_version_notice,
-                                stringResource(R.string.app_name)
-                            ),
-                            icon = {
-                                Icon(
-                                    imageVector = Icons.TwoTone.Error,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onErrorContainer,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                        )
-                    }
-
                     if (BuildConfig.IS_PR_BUILD || Natives.isPrBuild) {
                         WarningCard(
                             message = stringResource(
