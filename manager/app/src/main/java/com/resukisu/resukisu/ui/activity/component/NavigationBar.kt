@@ -3,11 +3,13 @@ package com.resukisu.resukisu.ui.activity.component
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +32,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AdminPanelSettings
+import androidx.compose.material.icons.filled.Extension
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,9 +58,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -65,6 +80,7 @@ import com.resukisu.resukisu.ui.screen.BottomBarDestination
 import com.resukisu.resukisu.ui.theme.CardConfig
 import com.resukisu.resukisu.ui.theme.ThemeConfig
 import com.resukisu.resukisu.ui.theme.blurEffect
+import com.resukisu.resukisu.ui.theme.liquidGlassEffect
 import com.resukisu.resukisu.ui.util.LocalHandlePageChange
 import com.resukisu.resukisu.ui.util.LocalSelectedPage
 import com.resukisu.resukisu.ui.viewmodel.HomeViewModel
@@ -219,9 +235,9 @@ private fun RowScope.BottomBarNavigationItem(
 }
 
 /**
- * Floating capsule bottom bar: a springy sliding pill indicator behind icon-only
- * destinations, carrying the same count badges. The pill can also be dragged
- * between the destination icons.
+ * Floating "liquid" bottom bar, ported from KernelSU-Next:
+ * a detached capsule with a springy sliding pill indicator that
+ * can also be dragged between the destination icons.
  */
 @Composable
 private fun FloatingBottomBar(
@@ -281,20 +297,32 @@ private fun FloatingBottomBar(
             Surface(
                 modifier = Modifier
                     .wrapContentWidth()
-                    .clip(capsuleShape)
-                    .blurEffect(
-                        compensateHorizontalOverscroll = true,
-                        compensateVerticalOverscroll = true,
-                        useFixedSurfaceBoundsForOverscroll = true,
+                    .liquidGlassEffect(capsuleShape)
+                    // Specular rim. Drawn in both modes so the capsule still
+                    // reads as glass when backdrop blur is unavailable.
+                    .border(
+                        width = 1.dp,
+                        brush = Brush.verticalGradient(
+                            listOf(
+                                Color.White.copy(alpha = 0.70f),
+                                Color.White.copy(alpha = 0.06f),
+                                Color.White.copy(alpha = 0.24f)
+                            )
+                        ),
+                        shape = capsuleShape
                     ),
                 shape = capsuleShape,
                 color =
                     if (themeConfig.isEnableBlur)
                         Color.Transparent
                     else
-                        MaterialTheme.colorScheme.surfaceContainer.copy(cardConfig.cardAlpha),
+                        // Without a backdrop blur there is nothing to hide the
+                        // content scrolling underneath, so keep the frost dense
+                        // enough to stay readable.
+                        MaterialTheme.colorScheme.surfaceContainerHigh
+                            .copy(alpha = cardConfig.cardAlpha.coerceAtLeast(0.82f)),
                 contentColor = MaterialTheme.colorScheme.onSurface,
-                shadowElevation = 8.dp
+                shadowElevation = 12.dp
             ) {
                 val itemSize = 56.dp
                 val itemSpacing = 4.dp
@@ -313,6 +341,18 @@ private fun FloatingBottomBar(
                     modifier = Modifier
                         .width(navBarWidth)
                         .height(72.dp)
+                        // Wet, glossy sheen: a bright reflection hugs the top
+                        // edge and falls off fast, with a faint counter-glare
+                        // bouncing back up from the floor.
+                        .background(
+                            Brush.verticalGradient(
+                                0f to Color.White.copy(alpha = 0.30f),
+                                0.12f to Color.White.copy(alpha = 0.11f),
+                                0.42f to Color.Transparent,
+                                0.86f to Color.White.copy(alpha = 0.05f),
+                                1f to Color.Black.copy(alpha = 0.09f)
+                            )
+                        )
                         .pointerInput(destinations, currentIndex) {
                             detectDragGestures(
                                 onDragStart = { offset ->
@@ -374,14 +414,64 @@ private fun FloatingBottomBar(
                                 },
                             contentAlignment = Alignment.Center
                         ) {
+                            val pillShape = RoundedCornerShape(16.dp)
+                            val pillColor = MaterialTheme.colorScheme.secondaryContainer
+
                             Box(
                                 modifier = Modifier
                                     .size(itemSize)
+                                    .clip(pillShape)
+                                    // Glossy two-tone: a bright reflective upper
+                                    // half breaks sharply into a darker lower body,
+                                    // the classic wet-button look.
                                     .background(
-                                        color = MaterialTheme.colorScheme.secondaryContainer,
-                                        shape = RoundedCornerShape(16.dp)
+                                        brush = Brush.verticalGradient(
+                                            0f to lerp(pillColor, Color.White, 0.62f),
+                                            0.48f to lerp(pillColor, Color.White, 0.10f),
+                                            0.50f to lerp(pillColor, Color.Black, 0.06f),
+                                            1f to lerp(pillColor, Color.Black, 0.24f)
+                                        )
                                     )
-                            )
+                                    // Glass rim: catches light on the top edge
+                                    .border(
+                                        width = 1.dp,
+                                        brush = Brush.verticalGradient(
+                                            listOf(
+                                                Color.White.copy(alpha = 0.75f),
+                                                Color.White.copy(alpha = 0.04f)
+                                            )
+                                        ),
+                                        shape = pillShape
+                                    )
+                            ) {
+                                // Specular gloss: a crisp highlight sitting on the
+                                // upper half, inset so it reads as a reflection on
+                                // the glass rather than a fill.
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .fillMaxHeight(0.5f)
+                                        .align(Alignment.TopCenter)
+                                        .padding(horizontal = 3.dp)
+                                        .padding(top = 2.dp)
+                                        .clip(
+                                            RoundedCornerShape(
+                                                topStart = 13.dp,
+                                                topEnd = 13.dp,
+                                                bottomStart = 9.dp,
+                                                bottomEnd = 9.dp
+                                            )
+                                        )
+                                        .background(
+                                            Brush.verticalGradient(
+                                                listOf(
+                                                    Color.White.copy(alpha = 0.55f),
+                                                    Color.White.copy(alpha = 0.0f)
+                                                )
+                                            )
+                                        )
+                                )
+                            }
                         }
                         // Navigation items
                         Row(
@@ -411,14 +501,15 @@ private fun FloatingBottomBar(
                                             )
                                         }
                                     ) {
-                                        Icon(
-                                            if (isSelected) destination.iconSelected else destination.iconNotSelected,
-                                            stringResource(destination.label),
-                                            tint = if (isSelected) {
+                                        DimensionalIcon(
+                                            imageVector = destination.solidIcon,
+                                            contentDescription = stringResource(destination.label),
+                                            baseColor = if (isSelected) {
                                                 MaterialTheme.colorScheme.primary
                                             } else {
                                                 MaterialTheme.colorScheme.onSurfaceVariant
-                                            }
+                                            },
+                                            isSelected = isSelected
                                         )
                                     }
                                 }
@@ -428,6 +519,74 @@ private fun FloatingBottomBar(
                 }
             }
         }
+    }
+}
+
+/**
+ * Solid counterparts of the destination icons. The outlined TwoTone variants
+ * used elsewhere have too little interior area for the lighting in
+ * [DimensionalIcon] to sculpt, so the floating bar uses filled glyphs.
+ */
+private val BottomBarDestination.solidIcon: ImageVector
+    get() = when (this) {
+        BottomBarDestination.Home -> Icons.Filled.Home
+        BottomBarDestination.SuperUser -> Icons.Filled.AdminPanelSettings
+        BottomBarDestination.Module -> Icons.Filled.Extension
+        BottomBarDestination.Settings -> Icons.Filled.Settings
+    }
+
+/**
+ * Icon with a sculpted, lit-from-above look: a soft cast shadow underneath for
+ * depth, and a vertical light ramp across the glyph so it reads as a raised
+ * solid rather than a flat silhouette. Selected icons sit higher (deeper
+ * shadow, stronger highlight) than unselected ones.
+ */
+@Composable
+private fun DimensionalIcon(
+    imageVector: ImageVector,
+    contentDescription: String?,
+    baseColor: Color,
+    isSelected: Boolean
+) {
+    val lift by animateDpAsState(
+        targetValue = if (isSelected) 3.dp else 2.dp,
+        label = "iconLift"
+    )
+    // Wide crown-to-floor spread is what sells the volume on a solid glyph.
+    val crown = lerp(baseColor, Color.White, if (isSelected) 0.85f else 0.6f)
+    val floor = lerp(baseColor, Color.Black, if (isSelected) 0.5f else 0.42f)
+
+    Box(contentAlignment = Alignment.Center) {
+        // Cast shadow — Modifier.blur is a no-op below API 31, which just
+        // leaves a crisper (still valid) shadow on older devices.
+        Icon(
+            imageVector = imageVector,
+            contentDescription = null,
+            tint = Color.Black.copy(alpha = if (isSelected) 0.65f else 0.5f),
+            modifier = Modifier
+                .offset(y = lift)
+                .blur(3.5.dp, BlurredEdgeTreatment.Unbounded)
+        )
+        // Body, shaded top-to-bottom, with a specular cap on the very top edge
+        Icon(
+            imageVector = imageVector,
+            contentDescription = contentDescription,
+            tint = Color.White,
+            modifier = Modifier
+                .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+                .drawWithContent {
+                    drawContent()
+                    drawRect(
+                        brush = Brush.verticalGradient(
+                            0f to Color.White,
+                            0.18f to crown,
+                            0.55f to baseColor,
+                            1f to floor
+                        ),
+                        blendMode = BlendMode.SrcAtop
+                    )
+                }
+        )
     }
 }
 

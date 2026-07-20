@@ -55,9 +55,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -95,6 +97,12 @@ import com.resukisu.resukisu.ui.util.LocalBlurState
 import com.resukisu.resukisu.ui.util.LocalPagerPage
 import com.resukisu.resukisu.ui.util.LocalPagerState
 import com.resukisu.resukisu.ui.util.LocalStretchOverscrollCompensationState
+import dev.kdrag0n.monet.theme.ColorScheme as MonetCompatColorScheme
+import java.io.File
+import java.io.FileOutputStream
+import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.floor
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -104,15 +112,11 @@ import top.yukonga.miuix.kmp.blur.BackdropEffectScope
 import top.yukonga.miuix.kmp.blur.BlendColorEntry
 import top.yukonga.miuix.kmp.blur.BlurColors
 import top.yukonga.miuix.kmp.blur.drawBackdrop
+import top.yukonga.miuix.kmp.blur.highlight.Highlight
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.runtimeShaderEffect
+import top.yukonga.miuix.kmp.blur.textureBlur
 import top.yukonga.miuix.kmp.blur.textureBlurEffect
-import java.io.File
-import java.io.FileOutputStream
-import kotlin.math.abs
-import kotlin.math.ceil
-import kotlin.math.floor
-import dev.kdrag0n.monet.theme.ColorScheme as MonetCompatColorScheme
 
 @Stable
 class ThemeConfig(
@@ -649,6 +653,45 @@ fun Modifier.blurEffect(
         compensateVerticalOverscroll = compensateVerticalOverscroll,
         useFixedSurfaceBoundsForOverscroll = useFixedSurfaceBoundsForOverscroll,
     )
+}
+
+/**
+ * Liquid glass: a lighter, more translucent backdrop blur clipped to [shape],
+ * finished with a specular glass rim so floating surfaces read as glass
+ * instead of a flat slab. Falls back to [blurEffect] styling when unsupported.
+ * @return modified modifier
+ */
+@Composable
+fun Modifier.liquidGlassEffect(shape: Shape): Modifier {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return this
+
+    return LocalBlurState.current?.let { backdrop ->
+        // Match the rim preset to the scheme actually in use, so it works for
+        // forced dark / AMOLED / custom backgrounds alike.
+        val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+
+        this.then(
+            Modifier.textureBlur(
+                backdrop = backdrop,
+                shape = shape,
+                blurRadius = 40f,
+                colors = BlurColors(
+                    blendColors = listOf(
+                        BlendColorEntry(
+                            // Dense enough that content passing underneath stays
+                            // unreadable, light enough to still read as glass.
+                            color = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.72f)
+                        )
+                    )
+                ),
+                highlight = if (isDark) {
+                    Highlight.GlassStrokeMiddleDark
+                } else {
+                    Highlight.GlassStrokeMiddleLight
+                }
+            )
+        )
+    } ?: this
 }
 
 private fun Modifier.renderBackgroundFallback(
