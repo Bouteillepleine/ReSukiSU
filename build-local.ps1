@@ -132,8 +132,30 @@ if ($Install) {
     & $adb install -r -d $apk.FullName
     if ($LASTEXITCODE -ne 0) { throw "install failed" }
     & $adb shell am force-stop com.resukisu.resukisu
-    Write-Host "Installed. If the manager shows 'Non installe', re-register the"
-    Write-Host "signature: su -c '/data/adb/ksud kernel dynamic-manager set-apk <apk>'"
+
+    # The kernel only accepts manager certs it knows: the hardcoded upstream
+    # ones, plus one "dynamic" signature. A self-signed build is not in that
+    # list, so register it or the app loses manager status ("Non installe",
+    # SuperUser count 0). Idempotent, and needed only when the signing key
+    # changes or the in-kernel registration gets cleared - but re-asserting
+    # each install costs nothing and removes a confusing failure mode.
+    #
+    # set-apk parses the installed base.apk directly; that only works because
+    # we sign v2-only. ksud's parser rejects any v3 signature block.
+    Step "Register manager signature (dynamic manager)"
+    $pkgPath = (& $adb shell pm path com.resukisu.resukisu) -replace '^package:', '' -replace '\s', ''
+    if (-not $pkgPath) {
+        Write-Warning "Could not resolve installed APK path; skipping registration."
+    } else {
+        & $adb shell "su -c '/data/adb/ksud kernel dynamic-manager set-apk $pkgPath'"
+        $reg = (& $adb shell "su -c '/data/adb/ksud kernel dynamic-manager get'") -join ' '
+        if ($reg -match 'size:\s*\d+') {
+            Write-Host "Registered -> $($reg.Trim())"
+        } else {
+            Write-Warning "Registration did not report a signature: $reg"
+            Write-Warning "Manager may show 'Non installe' until this succeeds."
+        }
+    }
 }
 
 Write-Host "`nDone." -ForegroundColor Green
