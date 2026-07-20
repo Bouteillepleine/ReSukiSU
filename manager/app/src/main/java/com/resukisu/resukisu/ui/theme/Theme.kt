@@ -55,6 +55,7 @@ import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -92,6 +93,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.yukonga.miuix.kmp.blur.BlendColorEntry
 import top.yukonga.miuix.kmp.blur.BlurColors
+import top.yukonga.miuix.kmp.blur.highlight.Highlight
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.textureBlur
 import java.io.File
@@ -614,6 +616,45 @@ fun Modifier.blurEffect(shape: Shape = RectangleShape): Modifier {
     } ?: this
 }
 
+
+/**
+ * Liquid glass: a lighter, more translucent backdrop blur clipped to [shape],
+ * finished with a specular glass rim so floating surfaces read as glass
+ * instead of a flat slab. Falls back to [blurEffect] styling when unsupported.
+ * @return modified modifier
+ */
+@Composable
+fun Modifier.liquidGlassEffect(shape: Shape): Modifier {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return this
+
+    return LocalBlurState.current?.let { backdrop ->
+        // Match the rim preset to the scheme actually in use, so it works for
+        // forced dark / AMOLED / custom backgrounds alike.
+        val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+
+        this.then(
+            Modifier.textureBlur(
+                backdrop = backdrop,
+                shape = shape,
+                blurRadius = 40f,
+                colors = BlurColors(
+                    blendColors = listOf(
+                        BlendColorEntry(
+                            // Dense enough that content passing underneath stays
+                            // unreadable, light enough to still read as glass.
+                            color = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.72f)
+                        )
+                    )
+                ),
+                highlight = if (isDark) {
+                    Highlight.GlassStrokeMiddleDark
+                } else {
+                    Highlight.GlassStrokeMiddleLight
+                }
+            )
+        )
+    } ?: this
+}
 
 fun Modifier.renderBackgroundBlur(
     tintColor: Color? = null
