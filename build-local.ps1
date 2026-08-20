@@ -74,17 +74,29 @@ try {
 } finally { Pop-Location }
 
 # --- 2. ksud -----------------------------------------------------------------
-# Stable Rust is fine: CI's extra -Z build-std flags only shrink the binary.
+# ksud requires NIGHTLY on current revisions: src/main.rs opens with
+# #![feature(decl_macro)], which stable rejects outright (E0554). Older
+# revisions did build on stable, hence the previous note here - don't
+# "simplify" this back.
+# Set RUSTUP_TOOLCHAIN rather than `cargo +nightly`: cargo-ndk shells out to
+# cargo/rustc itself, and those nested calls only inherit the toolchain through
+# the env var.
 $staged = Join-Path $repo 'target\aarch64-linux-android\release\ksud'
 if ($SkipKsud -and (Test-Path $staged)) {
     Step "Reusing existing ksud ($((Get-Item $staged).Length) bytes)"
 } else {
-    Step "cargo ndk build ksud (aarch64)"
+    Step "cargo ndk build ksud (aarch64, nightly)"
     Push-Location (Join-Path $repo 'userspace\ksud')
+    $prevToolchain = $env:RUSTUP_TOOLCHAIN
     try {
+        # Must be the -gnu host, spelled out: rustup's default host triple here
+        # is x86_64-pc-windows-msvc, so a bare 'nightly' resolves to the MSVC
+        # nightly and the host-side build scripts (proc-macro2, libc, ...) die
+        # with "linker `link.exe` not found" - this box has no MSVC linker.
+        $env:RUSTUP_TOOLCHAIN = 'nightly-x86_64-pc-windows-gnu'
         & cargo ndk b -t aarch64-linux-android -r
         if ($LASTEXITCODE -ne 0) { throw "ksud build failed" }
-    } finally { Pop-Location }
+    } finally { $env:RUSTUP_TOOLCHAIN = $prevToolchain; Pop-Location }
 
     $built = Join-Path $repo 'userspace\ksud\target\aarch64-linux-android\release\ksud'
     if (-not (Test-Path $built)) { throw "ksud missing after build: $built" }
@@ -114,13 +126,39 @@ Step "Result"
 Write-Host $apk.FullName
 Write-Host "$([math]::Round($apk.Length / 1MB, 1)) MB"
 
-# Guard the failure mode that silently breaks module listing on-device.
+# Guard two failure modes that silently ship a broken manager:
+#   1. libksud.so missing        -> manager shows 0 modules.
+#   2. CRLF in the embedded       -> ksud runs the module installer via
+#      installer.sh                  `busybox sh -c`, and \r\n makes ash reject
+#                                     `umask 022\r` ("illegal mode: 022") and
+#                                     mangle loops -> EVERY module install fails
+#                                     with "Failed to install module script".
+# The include_str! installer is baked in at compile time, so a transiently-CRLF
+# working tree (git autocrlf, a stray editor save) poisons the binary even when
+# .gitattributes says `*.sh eol=lf`. Byte-check the shipped .so, not the source.
 Add-Type -AssemblyName System.IO.Compression.FileSystem
+# ISO-8859-1 (28591) maps each byte 1:1 to a char - safe for scanning binaries
+# on Windows PowerShell 5.1, where [Text.Encoding]::Latin1 does not exist.
+$latin1 = [System.Text.Encoding]::GetEncoding(28591)
 $zip = [System.IO.Compression.ZipFile]::OpenRead($apk.FullName)
 try {
-    $lib = $zip.Entries | Where-Object { $_.FullName -eq 'lib/arm64-v8a/libksud.so' }
-    if (-not $lib) { throw "libksud.so missing from APK - manager would show 0 modules" }
-    Write-Host "libksud.so present ($($lib.Length) bytes)"
+    $libs = $zip.Entries | Where-Object { $_.FullName -match '^lib/.+/libksud\.so$' }
+    if (-not $libs) { throw "libksud.so missing from APK - manager would show 0 modules" }
+    foreach ($lib in $libs) {
+        $ms = New-Object System.IO.MemoryStream
+        $st = $lib.Open(); $st.CopyTo($ms); $st.Close()
+        $text = $latin1.GetString($ms.ToArray()); $ms.Dispose()
+        if ($text.Contains("umask 022`r`n")) {
+            throw ("CRLF embedded installer.sh in $($lib.FullName) - this ships a " +
+                   "manager that fails EVERY module install ('umask illegal mode 022'). " +
+                   "Fix the ksud checkout: git add --renormalize . ; confirm " +
+                   "`git ls-files --eol` shows w/lf for src/**/*.sh, then rebuild ksud.")
+        }
+        if (-not $text.Contains("umask 022`n")) {
+            throw "installer.sh 'umask 022' marker not found in $($lib.FullName) - build looks corrupt."
+        }
+        Write-Host "$($lib.FullName): present, installer.sh is LF ($($lib.Length) bytes)"
+    }
 } finally { $zip.Dispose() }
 
 # --- 4. Install --------------------------------------------------------------
