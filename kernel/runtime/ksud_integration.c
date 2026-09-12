@@ -800,9 +800,12 @@ int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code, int *v
         if (val) {
             // key pressed, count it
             volumedown_pressed_count += 1;
-            if (is_volumedown_enough(volumedown_pressed_count)) {
-                ksu_stop_input_hook_runtime();
-            }
+            // don't stop hook, or sleep in atomic context
+            // keep for on_post_fs_data do that
+            // check https://github.com/ReSukiSU/ReSukiSU/issues/363
+            // if (is_volumedown_enough(volumedown_pressed_count)) {
+            //     ksu_stop_input_hook_runtime();
+            // }
         }
     }
 

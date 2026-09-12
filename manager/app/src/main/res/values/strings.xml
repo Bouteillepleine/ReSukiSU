@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="app_name" translatable="false">ReSukiSU</string>
     <string name="home">Home</string>
     <string name="learn_more">Learn more</string>
@@ -59,7 +59,7 @@
     <string name="reboot_download">Reboot to Download</string>
     <string name="reboot_edl">Reboot to EDL</string>
     <string name="about">About</string>
-    <string name="about_anime_character_sticker"><![CDATA[The images of the files with anime character sticker are copyrighted by %1$s, the Brand Intellectual Property in the images is owned by %2$s. Before using these files, in addition to complying with %3$s, you also need to comply with the authorization of the two authors to use these artistic contents.]]></string>
+    <string name="about_anime_character_sticker"><![CDATA[The icons are licensed under a special arrangement: drawn by 怡子曰曰, the copyright is held by 明风 OuO, and the vectorized icons are provided by this project.]]></string>
     <string name="get_source_code">Check for source code</string>
     <string name="get_source_code_detail">Check for source code on GitHub</string>
     <string name="join_telegram_group">Join community</string>
@@ -237,6 +237,10 @@
     <string name="settings_custom_monospace_font_summary">Use built-in JetBrains Mono font for log display to avoid system monospace issues</string>
     <string name="simple_mode">Simplicity mode</string>
     <string name="simple_mode_summary">Hides unnecessary cards when turned on</string>
+    <string name="navigation_bar_badge">Navigation bar badges</string>
+    <string name="navigation_bar_badge_summary">Show superuser / module counts in the navigation bar</string>
+    <string name="home_card_icons">Show icons on home cards</string>
+    <string name="home_card_icons_summary">Add icons to the home information cards</string>
     <string name="theme_mode">Theme</string>
     <string name="theme_follow_system">Follow system</string>
     <string name="theme_light">Light</string>
@@ -378,8 +382,9 @@
     <string name="sus_maps_description_text">Hide the real file paths of memory mappings from /proc/self/[maps|smaps|smaps_rollup|map_files|mem|pagemap]. Please note: This feature does not support hiding anonymous memory mappings, nor can it hide inline hooks or PLT hooks caused by the injected library itself</string>
     <string name="sus_maps_warning">Important Notice: For applications with well-implemented injection detection mechanisms, this feature may not effectively bypass detection</string>
     <string name="sus_maps_debug_info">First, find the target application\'s PID and UID using ps -enf, then check the relevant paths in /proc/&lt;pid&gt;/maps and compare the device numbers with those in /proc/1/mountinfo to ensure consistency. Only when the device numbers match can the map hiding function work properly</string>
-    <string name="require_manager_version">The current KernelSU manager version %1$d is too low for KernelSU to work properly. Please upgrade manager to version %2$d or higher!</string>
-    <string name="require_kernel_version">The current KernelSU version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
+    <string name="require_manager_version">Manager update required</string>
+    <string name="require_kernel_version">Kernel update required. Tap to install.</string>
+    <string name="require_kernel_version_gki">Kernel update required</string>
     <string name="umount_path_manager">Umount Path Management</string>
     <string name="umount_path_manager_summary">Manage kernel unmount paths</string>
     <string name="no_any_umount_path">No existing umount paths</string>

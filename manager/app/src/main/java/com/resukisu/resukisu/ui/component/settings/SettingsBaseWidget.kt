@@ -19,8 +19,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CornerBasedShape
@@ -48,7 +47,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -60,7 +61,9 @@ import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.resukisu.resukisu.ui.component.settings.material3internal.rememberAnimatedShape
 import com.resukisu.resukisu.ui.theme.CardConfig
@@ -140,8 +143,14 @@ fun SettingsBaseWidget(
 
     val interactionSource = remember { MutableInteractionSource() }
 
-    val density = LocalDensity.current
-    val dynamicInternalPadding = (4 * density.fontScale).dp
+    /*
+     * Material 3 ListItem uses fixed 56dp/72dp minimum heights that do not shrink with fontScale,
+     * leaving excessive vertical space at smaller system font sizes. Recheck this workaround when
+     * updating Material 3 in case ListItem starts adapting its minimum height internally.
+     */
+    val fontScale = LocalDensity.current.fontScale
+    val defaultMinHeight = if (description == null) 56.dp else 72.dp
+    val adaptiveMinHeight = (defaultMinHeight * fontScale).coerceAtLeast(48.dp)
 
     val baseShape = LocalSegmentedItemShape.current
 
@@ -242,6 +251,32 @@ fun SettingsBaseWidget(
         )
     } else RectangleShape
 
+    val safeClickShape = if (onClick != null || onLongClick != null) {
+        remember(clickShape) {
+            object : Shape {
+                override fun createOutline(
+                    size: Size,
+                    layoutDirection: LayoutDirection,
+                    density: Density,
+                ): Outline = clickShape.createOutline(size, layoutDirection, density)
+            }
+        }
+    } else {
+        RectangleShape
+    }
+    val listItemShapes = if (onClick != null || onLongClick != null) {
+        ListItemDefaults.shapes(
+            shape = safeClickShape,
+            selectedShape = safeClickShape,
+            pressedShape = safeClickShape,
+            focusedShape = safeClickShape,
+            hoveredShape = safeClickShape,
+            draggedShape = safeClickShape,
+        )
+    } else {
+        shapes
+    }
+
     val clipShape = if (onClick != null || onLongClick != null) {
         clickShape
     } else {
@@ -249,6 +284,7 @@ fun SettingsBaseWidget(
     }
 
     var itemModifier = (if (fillMaxWidth) modifier.fillMaxWidth() else modifier)
+        .heightIn(min = adaptiveMinHeight)
     if (isOnBackground && themeConfig.isEnableBlurExp)
         itemModifier = itemModifier
             .clip(clipShape)
@@ -295,10 +331,6 @@ fun SettingsBaseWidget(
             }
 
             descriptionColumnContent?.invoke(this)
-
-            if (description != null || descriptionColumnContent != null) {
-                Spacer(Modifier.height(dynamicInternalPadding))
-            }
         }
     }
 
@@ -317,10 +349,6 @@ fun SettingsBaseWidget(
         Box(
             modifier = Modifier
                 .alpha(alpha)
-                .padding(
-                    top = dynamicInternalPadding,
-                    bottom = if (description == null && descriptionColumnContent == null) dynamicInternalPadding else 0.dp
-                )
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -367,7 +395,7 @@ fun SettingsBaseWidget(
             } else null,
             enabled = enabled,
             colors = colors,
-            shapes = shapes,
+            shapes = listItemShapes,
             verticalAlignment = Alignment.CenterVertically,
             leadingContent = finalLeadingContent,
             supportingContent = supportingContent,
@@ -384,7 +412,6 @@ fun SettingsBaseWidget(
          * which incorrectly exposes the item as disabled and changes its visual state.
          */
         ListItem(
-            headlineContent = headline,
             modifier = itemModifier
                 .clip(baseShape)
                 .then(
@@ -394,10 +421,15 @@ fun SettingsBaseWidget(
                         Modifier
                     }
                 ),
+            enabled = enabled,
+            verticalAlignment = Alignment.CenterVertically,
+            shapes = shapes,
             colors = colors,
             leadingContent = finalLeadingContent,
             supportingContent = supportingContent,
-            trailingContent = trailing
+            trailingContent = trailing,
+            contentPadding = ListItemDefaults.ContentPadding,
+            content = headline,
         )
     }
 }

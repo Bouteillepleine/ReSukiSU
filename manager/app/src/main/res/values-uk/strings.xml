@@ -58,7 +58,6 @@
     <string name="reboot_download">Перезавантажити в режим Download</string>
     <string name="reboot_edl">Перезавантажити в режим EDL</string>
     <string name="about">Про додаток</string>
-    <string name="about_anime_character_sticker"><![CDATA[Зображення файлів з картинкою аніме-персонажа захищені авторськими правами %1$s, а права на торгову марку у зображеннях належать %2$s. Перш ніж використовувати ці файли, окрім дотримання %3$s, вам також необхідно дотримуватись авторизації обох авторів щодо використання цього художнього контенту.]]></string>
     <string name="get_source_code">Переглянути вихідний код</string>
     <string name="get_source_code_detail">Переглянути вихідний код на GitHub</string>
     <string name="join_telegram_group">Приєднатися до спільноти</string>
@@ -111,7 +110,7 @@
     <string name="profile_umount_modules">Розмонтувати модулі</string>
     <string name="failed_to_update_app_profile">Не вдалося оновити профіль додатка для %s</string>
     <string name="debug_version_notice">Ви використовуєте налагоджувальну збірку менеджера. Якщо ви не знаєте, що таке налагоджувальна версія, негайно перейдіть на випускну збірку.</string>
-    <string name="unofficial_version_notice">"Менеджер, який ви використовуєте, не є офіційним менеджером %s, і ви можете не отримати необхідних дозволів."</string>
+    <string name="unofficial_version_notice">Менеджер, який ви використовуєте, не є офіційним менеджером %s, і ви можете не отримати необхідних дозволів.</string>
     <string name="conflict_with_apatch">Виявлено APatch. Деякі функції можуть не працювати.</string>
     <string name="settings_umount_modules_default">Розмонтовувати модулі за замовчуванням</string>
     <string name="settings_umount_modules_default_summary">Глобальне значення за замовчуванням для \"Розмонтувати модулі\" у профілі додатка. Якщо ввімкнено, це видалить усі зміни системи, зроблені модулями, для додатків без встановленого профілю</string>
@@ -368,8 +367,6 @@
     <string name="sus_maps_description_text">Приховати реальні шляхи до файлів відображень пам\'яті у /proc/self/[maps|smaps|smaps_rollup|map_files|mem|pagemap]. Зверніть увагу: ця функція не підтримує приховання анонімних відображень пам\'яті та не може приховати inline-хуки або PLT-хуки, спричинені самою впровадженою бібліотекою</string>
     <string name="sus_maps_warning">Важливе попередження: для додатків з добре реалізованими механізмами виявлення впровадження ця функція може не ефективно обійти виявлення</string>
     <string name="sus_maps_debug_info">Спочатку знайдіть PID та UID цільового додатка за допомогою ps -enf, потім перевірте відповідні шляхи в /proc/&lt;pid&gt;/maps та порівняйте номери пристроїв із /proc/1/mountinfo для забезпечення відповідності. Тільки при збігу номерів пристроїв функція приховання map працюватиме правильно</string>
-    <string name="require_manager_version">Поточна версія менеджера KernelSU %1$d є занадто низькою для коректної роботи KernelSU. Будь ласка, оновіть менеджер до версії %2$d або вище!</string>
-    <string name="require_kernel_version">Поточна версія KernelSU %1$d є занадто низькою для коректної роботи менеджера. Будь ласка, оновіть до версії %2$d або вище!</string>
     <string name="umount_path_manager">Керування шляхами розмонтування</string>
     <string name="umount_path_manager_summary">Керувати шляхами розмонтування ядра</string>
     <string name="no_any_umount_path">Шляхи розмонтування відсутні</string>
@@ -438,9 +435,6 @@
     <string name="susfs_status_variant">Варіант</string>
     <string name="susfs_status_enabled_features">Увімкнені функції</string>
     <string name="susfs_status_no_data">Немає даних</string>
-    <string name="susfs_standard_config_enabled">Збережена конфігурація</string>
-    <string name="susfs_standard_config_enabled_desc">Автоматично застосовувати збережену конфігурацію SUSFS під час завантаження.</string>
-    <string name="susfs_management_disabled_warning">Вбудоване керування SUSFS у Менеджері вимкнено.</string>
     <string name="susfs_standard_logging">Журнал</string>
     <string name="susfs_standard_logging_desc">Увімкнути журнал ядра SUSFS. Увімкнути перед повідомленням про помилку, пов\'язану з SUSFS.</string>
     <string name="susfs_standard_avc_log_spoofing">Підміна журналу AVC</string>
@@ -519,8 +513,8 @@
     <string name="dynamic_manager_clear_confirm_title">Очистити динамічний менеджер</string>
     <string name="dynamic_manager_clear_confirm_message">Ви впевнені, що хочете очистити налаштування динамічного менеджера?</string>
     <string name="manage_managers">Керування менеджерами</string>
-    <string name="home_version_info">Інформація про версію</string>
-    <string name="home_status_info">Інформація про стан</string>
+    <string name="home_version_info">Інформація</string>
+    <string name="home_status_info">Стан</string>
     <string name="home_short_info">Суперкористувач: %1$d, Модулі: %2$d</string>
     <string name="home_kernel_version">Версія драйвера ядра</string>
     <string name="search_no_any_match">Жодного збігу не знайдено</string>
@@ -535,4 +529,13 @@
     <string name="settings_check_manager_update_summary">Автоматична перевірка оновлень менеджера</string>
     <string name="settings_check_module_update">Перевірити оновлення модуля</string>
     <string name="settings_check_module_update_summary">Автоматична перевірка встановленого модуля оновлень</string>
+    <string name="settings_custom_monospace_font_summary">Використовувати вбудований шрифт JetBrains Mono для відображення журналу, щоб уникнути проблем із моноширинним розташуванням символів у системі</string>
+    <string name="susfs_config_disable_warning">Вбудований менеджер SUSFS вимкнено.\nУвімкніть його або встановіть сторонній модуль, щоб використовувати функції SUSFS.</string>
+    <string name="susfs_enable_config_summary">Увімкнути вбудований менеджер SUSFS. Може конфліктувати зі сторонніми модулями.</string>
+    <string name="susfs_enable_config">Менеджер SUSFS</string>
+    <string name="settings_custom_monospace_font">Використовувати вбудований моноширинний шрифт</string>
+    <string name="about_anime_character_sticker"><![CDATA[Піктограми ліцензовані за спеціальною угодою: намальовані 怡子曰曰, авторські права належать 明风 OuO, а векторизовані піктограми надані цим проєктом.]]></string>
+    <string name="require_kernel_version_gki">Потрібне оновлення ядра</string>
+    <string name="require_manager_version">Потрібне оновлення менеджера</string>
+    <string name="require_kernel_version">Потрібне оновлення ядра. Натисніть, щоб встановити.</string>
 </resources>

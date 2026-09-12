@@ -478,7 +478,7 @@ pub struct BootPatchArgs {
     #[arg(
         long,
         value_name = "NAMES",
-        default_value = "vr,vklp,oplus_secure_guard,oplus_secure_guard_new"
+        default_value = "vr,vklp,oplus_secure_guard,oplus_secure_guard_new,mkp"
     )]
     block_modules: Option<String>,
 
@@ -553,6 +553,9 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
                 "init and module must not be specified."
             );
         }
+
+        // None means --no-install: preserve the marker for the existing LKM.
+        let bundled_lkm = (!no_install).then_some(kmod.is_none());
 
         let kmi = kmi.map_or_else(
             || -> Result<_> {
@@ -738,6 +741,9 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
 
         apply_config("no custom rc", "norc=1", no_custom_rc);
         apply_config("allow shell", "allow_shell=1", allow_shell);
+        if let Some(bundled) = bundled_lkm {
+            apply_config("bundled LKM", "bundled=1", bundled);
+        }
 
         if ksu_config.is_empty() {
             cpio.rm("ksu_config", false);
@@ -814,9 +820,6 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             println!("- Flashing new boot image");
             let bootdevice = boot_image_file.display().to_string();
             flash_partition(&bootdevice, &new_boot_bytes)?;
-            if ota {
-                post_ota()?;
-            }
             if ota {
                 post_ota()?;
             }

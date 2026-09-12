@@ -33,6 +33,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.Android
 import androidx.compose.material.icons.twotone.Animation
+import androidx.compose.material.icons.twotone.Badge
 import androidx.compose.material.icons.twotone.BlurOn
 import androidx.compose.material.icons.twotone.Brush
 import androidx.compose.material.icons.twotone.Check
@@ -47,6 +48,7 @@ import androidx.compose.material.icons.twotone.Info
 import androidx.compose.material.icons.twotone.LightMode
 import androidx.compose.material.icons.twotone.Opacity
 import androidx.compose.material.icons.twotone.Palette
+import androidx.compose.material.icons.twotone.Pin
 import androidx.compose.material.icons.twotone.Style
 import androidx.compose.material.icons.twotone.SwapHoriz
 import androidx.compose.material.icons.twotone.Translate
@@ -82,7 +84,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.resukisu.resukisu.R
@@ -109,6 +110,7 @@ import com.resukisu.resukisu.ui.theme.ThemeConfig
 import com.resukisu.resukisu.ui.theme.blurEffect
 import com.resukisu.resukisu.ui.theme.blurSource
 import com.resukisu.resukisu.ui.theme.renderBackgroundBlur
+import com.resukisu.resukisu.ui.util.adaptiveScaffoldWindowInsets
 import com.resukisu.resukisu.ui.viewmodel.HomeUiAction
 import com.resukisu.resukisu.ui.viewmodel.HomeUiState
 import com.resukisu.resukisu.ui.viewmodel.HomeViewModel
@@ -132,8 +134,7 @@ import kotlin.math.roundToInt
 
 
 @SuppressLint(
-    "LocalContextConfigurationRead", "LocalContextResourcesRead", "ObsoleteSdkInt",
-    "RestrictedApi"
+    "LocalContextConfigurationRead", "LocalContextResourcesRead", "ObsoleteSdkInt"
 )
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -296,6 +297,7 @@ fun ThemeSettingsScreen(
     }
 
     Scaffold(
+        contentWindowInsets = adaptiveScaffoldWindowInsets(),
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeFlexibleTopAppBar(
@@ -354,31 +356,18 @@ fun ThemeSettingsScreen(
 
             item {
                 // Predictive Back Settings
-                val transition = LocalNavAnimatedContentScope.current.transition
-
                 SegmentedColumn(
                     title = stringResource(R.string.predictive_back_settings)
                 ) {
                     item {
                         PredictiveBackAnimationWidget(settingsState) { animation ->
-                            // Hey Google
-                            // Why you keep playing the animation even we are already play completed?
-
-                            // This is very dirty, We are using RestrictedApi, but we don't have other choice
-                            transition.setPlaytimeAfterInitialAndTargetStateEstablished(
-                                transition.targetState,
-                                transition.targetState,
-                                transition.playTimeNanos
-                            )
-
                             settingsViewModel.dispatch(
                                 SettingsUiAction.SetPredictiveBackAnimation(animation)
                             )
                         }
                     }
                     item(
-                        visible = settingsState.predictiveBackAnimation == PredictiveBackAnimation.Scale ||
-                                settingsState.predictiveBackAnimation == PredictiveBackAnimation.AOSP
+                        visible = settingsState.predictiveBackAnimation == PredictiveBackAnimation.Scale
                     ) {
                         PredictiveBackAnimationDirectionWidget(settingsState) { direction ->
                             settingsViewModel.dispatch(
@@ -521,25 +510,27 @@ private fun AppearanceSettings(
             )
         }
 
-        item {
-            // 动态颜色开关
-            SettingsSwitchWidget(
-                icon = Icons.TwoTone.ColorLens,
-                title = stringResource(R.string.dynamic_color_title),
-                description = stringResource(R.string.dynamic_color_summary),
-                checked = state.useDynamicColor,
-                onCheckedChange = { enabled ->
-                    viewModel.dispatch(SettingsUiAction.SetDynamicColor(enabled))
-                }
-            )
-        }
-
-        item(
-            visible = !state.useDynamicColor,
-            topPadding = 1.dp,
+        expandableItem(
+            expanded = !state.useDynamicColor,
+            topContent = {
+                SettingsSwitchWidget(
+                    icon = Icons.TwoTone.ColorLens,
+                    title = stringResource(R.string.dynamic_color_title),
+                    description = stringResource(R.string.dynamic_color_summary),
+                    checked = state.useDynamicColor,
+                    onCheckedChange = { enabled ->
+                        viewModel.dispatch(SettingsUiAction.SetDynamicColor(enabled))
+                    }
+                )
+            }
         ) {
-            // 主题色选择
-            ThemeColorSelection(viewModel = viewModel)
+            item(
+                visible = !state.useDynamicColor,
+                topPadding = 1.dp,
+            ) {
+                // 主题色选择
+                ThemeColorSelection(viewModel = viewModel)
+            }
         }
 
         item {
@@ -576,7 +567,9 @@ private fun AppearanceSettings(
             )
         }
 
-        item {
+        item(
+            forceFlatBottom = true,
+        ) {
             SettingsBaseWidget(
                 icon = Icons.TwoTone.FormatSize,
                 title = stringResource(R.string.app_dpi_title),
@@ -593,6 +586,7 @@ private fun AppearanceSettings(
 
         item(
             topPadding = 1.dp,
+            forceFlatTop = true,
         ) { shape ->
             Surface(
                 modifier = Modifier
@@ -601,7 +595,6 @@ private fun AppearanceSettings(
                 color = if (themeConfig.isEnableBlurExp) Color.Transparent else MaterialTheme.colorScheme.surfaceBright.copy(
                     alpha = cardConfig.cardAlpha
                 ),
-                shape = shape
             ) {
                 Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                     DpiSliderControls(
@@ -718,6 +711,30 @@ private fun CustomizationSettings(
                 checked = homeUiState.isSimpleMode,
                 onCheckedChange = { enabled ->
                     homeViewModel.dispatch(HomeUiAction.SetSimpleMode(enabled))
+                }
+            )
+        }
+
+        item {
+            SettingsSwitchWidget(
+                icon = Icons.TwoTone.Pin,
+                title = stringResource(R.string.navigation_bar_badge),
+                description = stringResource(R.string.navigation_bar_badge_summary),
+                checked = homeUiState.showNavigationBarBadge,
+                onCheckedChange = { enabled ->
+                    homeViewModel.dispatch(HomeUiAction.SetNavigationBarBadge(enabled))
+                }
+            )
+        }
+
+        item {
+            SettingsSwitchWidget(
+                icon = Icons.TwoTone.Badge,
+                title = stringResource(R.string.home_card_icons),
+                description = stringResource(R.string.home_card_icons_summary),
+                checked = homeUiState.showHomeCardIcons,
+                onCheckedChange = { enabled ->
+                    homeViewModel.dispatch(HomeUiAction.SetHomeCardIcons(enabled))
                 }
             )
         }

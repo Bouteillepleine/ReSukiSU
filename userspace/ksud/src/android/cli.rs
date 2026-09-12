@@ -572,9 +572,11 @@ pub fn run() -> Result<()> {
             .with_tag("KernelSU"),
     );
 
+    ksucalls::setup_sigsys_handler();
+
     // the kernel executes su with argv[0] = "su" and replace it with us
     let arg0 = std::env::args().next().unwrap_or_default();
-    if arg0 == "su" || arg0 == "/system/bin/su" {
+    if arg0 == "su" || arg0.ends_with("/su") {
         return su::root_shell();
     }
 
@@ -811,6 +813,10 @@ pub fn run() -> Result<()> {
                 println!("uapi_version: {}", info.uapi_version);
                 println!("features: 0x{:x}", info.features);
                 println!("lkm: {}", ksucalls::is_lkm());
+                println!(
+                    "bundled: {}",
+                    (info.flags & uapi::KSU_GET_INFO_FLAG_BUNDLED) != 0
+                );
                 println!("late_load: {}", ksucalls::is_late_load());
                 println!("runtime_mode: {}", ksucalls::runtime_mode());
                 println!(
@@ -871,7 +877,7 @@ pub fn run() -> Result<()> {
             Kernel::Umount { command } => match command {
                 UmountOp::Add { mnt, flags } => ksucalls::umount_list_add(&mnt, flags),
                 UmountOp::Del { mnt } => ksucalls::umount_list_del(&mnt),
-                UmountOp::Wipe => ksucalls::umount_list_wipe().map_err(Into::into),
+                UmountOp::Wipe => ksucalls::umount_list_wipe(),
                 UmountOp::List => {
                     let list = ksucalls::umount_list_list()?;
                     println!("{}", serde_json::to_string(&list)?);

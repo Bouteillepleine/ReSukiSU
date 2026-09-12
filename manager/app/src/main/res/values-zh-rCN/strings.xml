@@ -58,7 +58,7 @@
     <string name="reboot_download">重启到 Download</string>
     <string name="reboot_edl">重启到 EDL</string>
     <string name="about">关于</string>
-    <string name="about_anime_character_sticker"><![CDATA[有动漫人物图片表情包的图像版权为%1$s所有，图像中的知识产权由%2$s 所有。在使用这些文件之前，除了必须遵守 %3$s 以外，还需要遵守向前两者索要使用这些艺术内容的授权。]]></string>
+    <string name="about_anime_character_sticker"><![CDATA[图标以特别的形式授权，怡子曰曰绘制，版权明风OuO所有。矢量化图标由本项目提供。]]></string>
     <string name="get_source_code">查看源代码</string>
     <string name="get_source_code_detail">在 GitHub 上查看源代码</string>
     <string name="join_telegram_group">加入社区</string>
@@ -111,7 +111,7 @@
     <string name="profile_umount_modules">卸载模块</string>
     <string name="failed_to_update_app_profile">为 %s 更新 App Profile 失败</string>
     <string name="debug_version_notice">你正在使用管理器的 DEBUG 构建，如果你不知道什么是 DEBUG 构建，请立即切换至 RELEASE 构建</string>
-    <string name="unofficial_version_notice">"您使用的管理器并非 %s 官方管理器，您可能无法获得权限。"</string>
+    <string name="unofficial_version_notice">您使用的管理器并非 %s 官方管理器，您可能无法获得权限。</string>
     <string name="conflict_with_apatch">检测到 APatch, 所有功能均可能停止工作。</string>
     <string name="settings_umount_modules_default">默认卸载模块</string>
     <string name="settings_umount_modules_default_summary">App Profile 中\"卸载模块\"的全局默认值，如果启用，将会为没有设置 Profile 的应用移除所有模块针对系统的修改</string>
@@ -234,6 +234,10 @@
     <string name="settings_custom_monospace_font_summary">使用内置等宽字体显示日志，解决某些 ROM 上字体对齐异常的问题</string>
     <string name="simple_mode">简洁模式</string>
     <string name="simple_mode_summary">开启后将隐藏不必要的卡片</string>
+    <string name="navigation_bar_badge">导航栏角标</string>
+    <string name="navigation_bar_badge_summary">在导航栏展示超级用户 / 模块数量</string>
+    <string name="home_card_icons">主页卡片显示图标</string>
+    <string name="home_card_icons_summary">主页信息卡片添加图标展示</string>
     <string name="theme_mode">主题模式</string>
     <string name="theme_follow_system">跟随系统</string>
     <string name="theme_light">浅色</string>
@@ -259,7 +263,7 @@
     <string name="slot_a">A 槽位</string>
     <string name="slot_b">B 槽位</string>
     <string name="selected_slot">已选择槽位: %1$s</string>
-    <string name="current_slot">当前系统默认槽位：%1$s </string>
+    <string name="current_slot">当前系统默认槽位：%1$s</string>
     <string name="horizon_copy_failed">复制失败</string>
     <string name="horizon_unknown_error">未知错误</string>
     <string name="flash_failed_message">刷写失败</string>
@@ -374,8 +378,9 @@
     <string name="sus_maps_description_text">从 /proc/self/[maps|smaps|smaps_rollup|map_files|mem|pagemap] 中隐藏内存映射的真实文件路径。请注意：此功能不支持隐藏匿名内存映射，也无法隐藏由注入库本身产生的内联钩子或 PLT 钩子</string>
     <string name="sus_maps_warning">重要提示：对于具备完善注入检测机制的应用，此功能可能无法有效绕过检测</string>
     <string name="sus_maps_debug_info">首先通过 ps -enf 查找目标应用的 PID 和 UID，然后检查 /proc/&lt;pid&gt;/maps 中的相关路径，并与 /proc/1/mountinfo 中的设备号进行比对以确保一致性。只有当设备号一致时，隐藏映射才能正常工作</string>
-    <string name="require_manager_version">当前 KernelSU 管理器版本 %1$d 过低，KernelSU 无法正常工作. 请将 KernelSU 管理器版本升级至 %2$d 或以上!</string>
-    <string name="require_kernel_version">当前 KernelSU 版本 %1$d 过低，管理器无法正常工作，请将内核 KernelSU 版本升级至 %2$d 或以上！</string>
+    <string name="require_manager_version">需要更新管理器</string>
+    <string name="require_kernel_version">需要更新内核，点击此处安装</string>
+    <string name="require_kernel_version_gki">需要更新内核</string>
     <string name="umount_path_manager">Umount 路径管理</string>
     <string name="umount_path_manager_summary">管理内核卸载路径</string>
     <string name="no_any_umount_path">没有任何内核卸载路径</string>
@@ -444,9 +449,6 @@
     <string name="susfs_status_variant">变体</string>
     <string name="susfs_status_enabled_features">支持功能</string>
     <string name="susfs_status_no_data">无数据</string>
-    <string name="susfs_standard_config_enabled">启用持久化配置</string>
-    <string name="susfs_standard_config_enabled_desc">开机时自动应用已保存的 SUSFS 配置。</string>
-    <string name="susfs_management_disabled_warning">管理器内置 SUSFS 管理已被禁用。</string>
     <string name="susfs_standard_logging">日志</string>
     <string name="susfs_standard_logging_desc">启用 SUSFS 内核日志。在反馈 SUSFS 问题前请启用该开关并复现问题，然后携带日志提问。</string>
     <string name="susfs_standard_avc_log_spoofing">AVC 日志欺骗</string>
@@ -537,4 +539,7 @@
     <string name="susfs_standard_uname">Uname</string>
     <string name="susfs_standard_cmdline_or_bootconfig">Cmdline / Bootconfig</string>
     <string name="susfs_redirect_entry_description">%1$s · %2$s</string>
+    <string name="susfs_enable_config">SUSFS管理器</string>
+    <string name="susfs_enable_config_summary">启用内置SUSFS管理器。这可能与第三方模块冲突。</string>
+    <string name="susfs_config_disable_warning">内置SUSFS管理器已关闭。启用它或安装第三方模块来使用SUSFS功能。</string>
 </resources>

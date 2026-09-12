@@ -1,8 +1,5 @@
 package com.resukisu.resukisu.ui.screen.about
 
-import org.koin.compose.koinInject
-import com.resukisu.resukisu.ui.theme.CardConfig
-import com.resukisu.resukisu.ui.theme.ThemeConfig
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -62,9 +59,13 @@ import com.resukisu.resukisu.ui.component.settings.SettingsJumpPageWidget
 import com.resukisu.resukisu.ui.navigation.LocalNavigator
 import com.resukisu.resukisu.ui.navigation.Navigator
 import com.resukisu.resukisu.ui.navigation.Route
+import com.resukisu.resukisu.ui.theme.CardConfig
+import com.resukisu.resukisu.ui.theme.ThemeConfig
 import com.resukisu.resukisu.ui.theme.blurEffect
 import com.resukisu.resukisu.ui.theme.blurSource
 import com.resukisu.resukisu.ui.theme.renderBackgroundBlur
+import com.resukisu.resukisu.ui.util.adaptiveScaffoldWindowInsets
+import org.koin.compose.koinInject
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -81,6 +82,7 @@ fun AboutScreen() {
     )
 
     Scaffold(
+        contentWindowInsets = adaptiveScaffoldWindowInsets(),
         topBar = {
             LargeFlexibleTopAppBar(
                 modifier = Modifier.blurEffect(
@@ -144,10 +146,7 @@ fun AboutScreen() {
                     ),
                     message = AnnotatedString.fromHtml(
                         htmlString = stringResource(
-                            id = R.string.about_anime_character_sticker,
-                            "<b>怡子曰曰</b>",
-                            "<b>明风 OuO</b>",
-                            "<b><a href=\"https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode.txt\">CC BY-NC-SA 4.0</a></b>"
+                            id = R.string.about_anime_character_sticker
                         ),
                         linkStyles = TextLinkStyles(
                             style = SpanStyle(

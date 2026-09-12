@@ -96,9 +96,7 @@
     <string name="direct_install">直接インストール (推奨)</string>
     <string name="select_file">パッチを行うイメージを選択</string>
     <string name="install_inactive_slot">非アクティブなスロットにインストール (OTA 後)</string>
-    <string name="install_inactive_slot_warning">再起動後、デバイスは**強制的に**、現在の非アクティブスロットから起動します。
-\nこのオプションは、OTA が完了した後にのみ使用してください。
-\n続行しますか？</string>
+    <string name="install_inactive_slot_warning">再起動後、デバイスは**強制的に**、現在の非アクティブスロットから起動します。 \nこのオプションは、OTA が完了した後にのみ使用してください。 \n続行しますか？</string>
     <string name="install_next">次へ</string>
     <string name="install_select_partition">パーティションを選択</string>
     <string name="install_upload_lkm_file">ローカル KVM ファイルを使用する</string>
@@ -134,10 +132,10 @@
     <string name="home_android_version">Android バージョン</string>
     <string name="home_device_model">デバイスモデル</string>
     <string name="su_not_allowed">「%s」にスーパーユーザー権限を付与することはできません</string>
-    <string name="settings_sucompat">古典 su 命令</string>
-    <string name="settings_sucompat_summary">/system/bin/su 経由での 根源権限（特権）を 許可します（新規 手順/工程 のみ）</string>
-    <string name="settings_kernel_umount">module の umount</string>
-    <string name="settings_kernel_umount_summary">App Profile に基づき、kernel 側で module を umount します （あぷり ぷろふぁいる に もとづき、かーねる がわで もじゅーる を あんまうんと します）</string>
+    <string name="settings_sucompat">従来の su コマンド</string>
+    <string name="settings_sucompat_summary">新規プロセスにおいて、/system/bin/su を経由して root アクセスを許可します。</string>
+    <string name="settings_kernel_umount">モジュールのアンマウント（カーネルレベル）</string>
+    <string name="settings_kernel_umount_summary">アプリ プロファイルに基づいて、カーネルからモジュールをアンマウントします</string>
     <string name="feature_status_unsupported_summary">カーネルはこの機能に対応していません</string>
     <string name="feature_status_managed_summary">この機能はモジュールによって管理されています</string>
     <string name="settings_mode_default">デフォルト</string>
@@ -166,7 +164,7 @@
     <string name="slot_a">スロット A</string>
     <string name="slot_b">スロット B</string>
     <string name="selected_slot">選択したスロット: %1$s</string>
-    <string name="current_slot">現在のシステムデフォルトスロット: %1$s </string>
+    <string name="current_slot">現在のシステムデフォルトスロット: %1$s</string>
     <string name="horizon_copy_failed">コピーに失敗しました</string>
     <string name="horizon_unknown_error">不明なエラー</string>
     <string name="flash_failed_message">フラッシュに失敗しました</string>
@@ -268,4 +266,18 @@
     <string name="confirm_delete">構成を削除</string>
     <string name="operation_failed">操作が失敗しました</string>
     <string name="group_contains_apps">%d 個のアプリが含まれています</string>
+    <string name="home_seccomp_status">Seccomp のステータス</string>
+    <string name="seccomp_status_not_supported">Not supported</string>
+    <string name="seccomp_status_disabled">Disabled</string>
+    <string name="seccomp_status_strict">Strict</string>
+    <string name="seccomp_status_filter">Filter</string>
+    <string name="seccomp_status_unknown">Unknown</string>
+    <string name="sulog">SU ログ</string>
+    <string name="sulog_log_files">ログファイル</string>
+    <string name="sulog_failed_to_load">SU ログの読み込みに失敗しました</string>
+    <string name="sulog_disabled_title">SU ログは有効になっていません</string>
+    <string name="sulog_unsupported_title">SU ログはサポートされていません</string>
+    <string name="sulog_enable_action">有効化</string>
+    <string name="sulog_filter_title">種類で絞り込む</string>
+    <string name="sulog_clean_title">ログを消去</string>
 </resources>

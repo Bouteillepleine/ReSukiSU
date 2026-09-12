@@ -10,14 +10,10 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -28,7 +24,6 @@ import androidx.compose.material.icons.twotone.ChevronRight
 import androidx.compose.material.icons.twotone.MoreVert
 import androidx.compose.material.icons.twotone.SearchOff
 import androidx.compose.material3.DropdownMenuGroup
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -38,6 +33,7 @@ import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SelectableDropdownMenuItem
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -58,10 +54,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -82,6 +75,7 @@ import com.resukisu.resukisu.ui.navigation.Route
 import com.resukisu.resukisu.ui.screen.LabelText
 import com.resukisu.resukisu.ui.theme.blurSource
 import com.resukisu.resukisu.ui.util.LocalSnackbarHost
+import com.resukisu.resukisu.ui.util.adaptiveScaffoldWindowInsets
 import com.resukisu.resukisu.ui.util.showReplacingSnackbar
 import com.resukisu.resukisu.ui.viewmodel.SortType
 import com.resukisu.resukisu.ui.viewmodel.SuperUserUiAction
@@ -185,9 +179,6 @@ fun SuperUserPage(bottomPadding: Dp) {
     }
 
     Scaffold(
-        modifier = Modifier
-            .testTag(SUPER_USER_SCREEN_TEST_TAG)
-            .semantics { testTagsAsResourceId = true },
         topBar = {
             SearchAppBar(
                 title = stringResource(R.string.superuser),
@@ -236,7 +227,7 @@ fun SuperUserPage(bottomPadding: Dp) {
                 hostState = snackBarHostState
             )
         },
-        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
+        contentWindowInsets = adaptiveScaffoldWindowInsets(includeBottom = false),
     ) { innerPadding ->
         SuperUserContent(
             innerPadding = innerPadding,
@@ -355,7 +346,6 @@ private fun SuperUserContent(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
-                .testTag(SUPER_USER_LIST_TEST_TAG)
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
         ) {
             item {
@@ -363,13 +353,13 @@ private fun SuperUserContent(
             }
             lazySegmentColumn(
                 items = uiState.appGroupList,
-                key = { _, appGroup -> "${appGroup.uid}-${appGroup.mainApp.packageName}" },
-                contentType = { _, _ -> "AppGroupItem" }
+                key = { _, appGroup -> "${appGroup.uid}-${appGroup.profileKey}" },
+                contentType = { _, appGroup -> "${appGroup.uid}-${appGroup.profileKey}" },
             ) { _, appGroup ->
                 AppGroupItem(
                     appGroup = appGroup
                 ) {
-                    navigator.push(Route.AppProfile(appGroup.uid, appGroup.mainApp.packageName))
+                    navigator.push(Route.AppProfile(appGroup.uid, appGroup.profileKey))
                 }
             }
 
@@ -379,9 +369,6 @@ private fun SuperUserContent(
         }
     }
 }
-
-private const val SUPER_USER_LIST_TEST_TAG = "super_user_app_list"
-private const val SUPER_USER_SCREEN_TEST_TAG = "super_user_screen"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -425,12 +412,12 @@ private fun SuperUserDropdown(
             shapes = MenuDefaults.groupShapes(),
         ) {
             SortType.entries.forEachIndexed { index, sortType ->
-                DropdownMenuItem(
+                SelectableDropdownMenuItem(
                     selected = uiState.currentSortType == sortType,
-                    text = { Text(stringResource(sortType.displayNameRes)) },
                     onClick = {
                         viewModel.dispatch(SuperUserUiAction.SetSort(sortType))
                     },
+                    text = { Text(stringResource(sortType.displayNameRes)) },
                     shapes = MenuDefaults.itemShape(
                         index = index,
                         count = SortType.entries.size,
@@ -445,13 +432,13 @@ private fun SuperUserDropdown(
             shapes = MenuDefaults.groupShapes(),
         ) {
             menuItems.forEachIndexed { index, menuItem ->
-                DropdownMenuItem(
+                SelectableDropdownMenuItem(
                     selected = menuItem.checked,
-                    text = { Text(stringResource(menuItem.titleRes)) },
                     onClick = {
                         onDismissRequest()
                         menuItem.onClick()
                     },
+                    text = { Text(stringResource(menuItem.titleRes)) },
                     shapes = MenuDefaults.itemShape(
                         index = index,
                         count = menuItems.size,
@@ -477,7 +464,7 @@ private fun AppGroupItem(
         description = if (appGroup.apps.size > 1) {
             stringResource(R.string.group_contains_apps, appGroup.apps.size)
         } else {
-            mainApp.packageName
+            mainApp.displayIdentifier
         },
         descriptionColumnContent = {
             Spacer(modifier = Modifier.height(5.dp))
@@ -525,7 +512,7 @@ private fun AppGroupItem(
         },
         leadingContent = {
             PackageIcon(
-                packageName = mainApp.packageName,
+                packageName = if (appGroup.isWebViewZygote) "android" else mainApp.packageName,
                 contentDescription = mainApp.label,
                 modifier = Modifier
                     .padding(4.dp)

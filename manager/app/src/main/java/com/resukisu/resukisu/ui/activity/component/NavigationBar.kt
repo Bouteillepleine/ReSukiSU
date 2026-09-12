@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -69,6 +70,7 @@ fun NavigationBar(
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
     val superuserCount = uiState.systemInfo.superuserCount
     val moduleCount = uiState.systemInfo.moduleCount
+    val showNavigationBarBadge = uiState.showNavigationBarBadge
     val page = LocalSelectedPage.current
     val handlePageChange = LocalHandlePageChange.current
     val pagerState = LocalPagerState.current
@@ -137,7 +139,7 @@ fun NavigationBar(
         FlexibleBottomAppBar(
             modifier = modifier
                 .windowInsetsPadding(
-                    WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)
+                    WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
                 )
                 .blurEffect(
                     compensateHorizontalOverscroll = true,
@@ -160,6 +162,7 @@ fun NavigationBar(
                     },
                     superuserCount = superuserCount,
                     moduleCount = moduleCount,
+                    showNavigationBarBadge = showNavigationBarBadge,
                 )
             }
         }
@@ -167,7 +170,7 @@ fun NavigationBar(
         WideNavigationRail(
             modifier = modifier
                 .windowInsetsPadding(
-                    WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)
+                    WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
                 )
                 .blurEffect(
                     compensateHorizontalOverscroll = true,
@@ -195,6 +198,7 @@ fun NavigationBar(
                     },
                     superuserCount = superuserCount,
                     moduleCount = moduleCount,
+                    showNavigationBarBadge = showNavigationBarBadge,
                 )
             }
         }
@@ -208,6 +212,7 @@ private fun NavigationRailItem(
     onClick: () -> Unit,
     superuserCount: Int,
     moduleCount: Int,
+    showNavigationBarBadge: Boolean,
 ) {
     WideNavigationRailItem(
         railExpanded = false,
@@ -220,6 +225,7 @@ private fun NavigationRailItem(
                         dest = destination,
                         superUser = superuserCount,
                         module = moduleCount,
+                        show = showNavigationBarBadge,
                     )
                 }
             ) {
@@ -249,6 +255,7 @@ private fun RowScope.BottomBarNavigationItem(
     onClick: () -> Unit,
     superuserCount: Int,
     moduleCount: Int,
+    showNavigationBarBadge: Boolean,
 ) {
     NavigationBarItem(
         selected = isSelected,
@@ -260,6 +267,7 @@ private fun RowScope.BottomBarNavigationItem(
                         dest = destination,
                         superUser = superuserCount,
                         module = moduleCount,
+                        show = showNavigationBarBadge,
                     )
                 }
             ) {
@@ -288,6 +296,7 @@ private fun DestinationBadge(
     dest: BottomBarDestination,
     superUser: Int,
     module: Int,
+    show: Boolean,
 ) {
     val count = when (dest) {
         BottomBarDestination.SuperUser -> superUser
@@ -296,7 +305,7 @@ private fun DestinationBadge(
     }
 
     AnimatedVisibility(
-        visible = count > 0,
+        visible = count > 0 && show,
         enter = fadeIn(),
         exit = fadeOut()
     ) {
