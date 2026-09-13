@@ -125,7 +125,7 @@ fun SettingsPage(bottomPadding: Dp) {
     val homeViewModel = koinViewModel<HomeViewModel>()
     val generateBugreport = koinInject<GenerateBugreportUseCase>()
     val uiState by settingsViewModel.uiState.collectAsStateWithLifecycle()
-    val homeState by homeViewModel.state.collectAsStateWithLifecycle()
+    val homeState by homeViewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         settingsViewModel.dispatch(SettingsUiAction.LoadFeatureSettings)

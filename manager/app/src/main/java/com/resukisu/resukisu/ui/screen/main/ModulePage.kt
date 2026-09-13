@@ -194,7 +194,7 @@ fun ModulePage(bottomPadding: Dp) {
     val context = LocalContext.current
     val viewModel = koinViewModel<ModuleViewModel>()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val homeState by koinViewModel<HomeViewModel>().state.collectAsStateWithLifecycle()
+    val homeState by koinViewModel<HomeViewModel>().uiState.collectAsStateWithLifecycle()
     val snackBarHost = LocalSnackbarHost.current
     val scope = rememberCoroutineScope()
     var lastClickTime by remember { mutableStateOf(0L) }
