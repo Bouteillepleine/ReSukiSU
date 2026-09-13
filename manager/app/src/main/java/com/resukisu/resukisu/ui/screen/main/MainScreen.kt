@@ -53,7 +53,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun MainScreen() {
     val themeConfig: ThemeConfig = koinInject()
     val homeViewModel = koinViewModel<HomeViewModel>()
-    val homeState by homeViewModel.state.collectAsStateWithLifecycle()
+    val homeState by homeViewModel.uiState.collectAsStateWithLifecycle()
     val pages = remember(homeState.systemStatus.isFullFeatured) {
         BottomBarDestination.getPages(homeState.systemStatus.isFullFeatured)
     }

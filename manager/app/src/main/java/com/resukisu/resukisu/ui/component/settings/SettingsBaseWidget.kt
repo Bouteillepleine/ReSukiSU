@@ -29,11 +29,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.ListItemShapes
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocal
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.compositionLocalOf
@@ -365,6 +367,26 @@ fun SettingsBaseWidget(
         }
     }
 
+    // M3E ListItem has bug, supportingContent will cause RectList broken
+    // and cause application crash.
+
+    // We use headlineContent + Column + supportingContent for workaround,
+    // Hope Google fix this problem in their new version....
+    val expressiveContent: @Composable () -> Unit = {
+        Column {
+            headline()
+            CompositionLocalProvider(
+                LocalContentColor provides colors.supportingContentColor(
+                    enabled = enabled,
+                    selected = selected,
+                    dragged = false,
+                ),
+            ) {
+                supportingContent()
+            }
+        }
+    }
+
     if (onClick != null || onLongClick != null) {
         var touchPoint by remember { mutableStateOf(Offset.Zero) }
 
@@ -398,10 +420,9 @@ fun SettingsBaseWidget(
             shapes = listItemShapes,
             verticalAlignment = Alignment.CenterVertically,
             leadingContent = finalLeadingContent,
-            supportingContent = supportingContent,
             trailingContent = trailing,
             interactionSource = interactionSource,
-            content = headline
+            content = expressiveContent
         )
     } else {
         /*
@@ -426,10 +447,9 @@ fun SettingsBaseWidget(
             shapes = shapes,
             colors = colors,
             leadingContent = finalLeadingContent,
-            supportingContent = supportingContent,
             trailingContent = trailing,
             contentPadding = ListItemDefaults.ContentPadding,
-            content = headline,
+            content = expressiveContent,
         )
     }
 }
