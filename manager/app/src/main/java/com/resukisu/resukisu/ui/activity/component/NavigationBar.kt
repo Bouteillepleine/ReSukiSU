@@ -22,6 +22,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FlexibleBottomAppBar
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
@@ -54,7 +55,7 @@ import com.resukisu.resukisu.ui.viewmodel.HomeViewModel
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
-import top.yukonga.miuix.kmp.theme.LocalContentColor
+
 
 @SuppressLint("ContextCastToActivity")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -75,10 +76,6 @@ fun NavigationBar(
     val handlePageChange = LocalHandlePageChange.current
     val pagerState = LocalPagerState.current
 
-    val backdrop = LocalBlurState.current
-    val fallbackBackdrop = rememberLayerBackdrop()
-    val isBlurEnabled = backdrop != null
-
     if (isBottomBar && themeConfig.bottomBarStyle == BottomBarStyle.FLOATING) {
         Box(
             modifier = Modifier
@@ -95,9 +92,7 @@ fun NavigationBar(
             FloatingBottomBar(
                 selectedIndex = { pagerState.targetPage },
                 onSelected = { handlePageChange(it) },
-                backdrop = backdrop ?: fallbackBackdrop,
                 tabsCount = destinations.size,
-                isBlurEnabled = isBlurEnabled,
             ) {
                 destinations.forEachIndexed { index, destination ->
                     FloatingBottomBarItem(

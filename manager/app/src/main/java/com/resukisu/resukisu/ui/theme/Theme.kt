@@ -627,8 +627,13 @@ fun Modifier.blurEffect(
     }
 
     return LocalBlurState.current?.let { backdrop ->
+        // 0.8f like haze, for material design without custom background enable
+        val blurTintAlpha = if (cardConfig.isCustomBackgroundEnabled)
+            cardConfig.cardAlpha
+        else 0.8f
+
         val blendColor =
-            MaterialTheme.colorScheme.surfaceContainer.copy(alpha = cardConfig.cardAlpha)
+            MaterialTheme.colorScheme.surfaceContainer.copy(alpha = blurTintAlpha)
 
         this.then(
             Modifier

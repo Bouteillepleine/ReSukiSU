@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -64,6 +65,7 @@ import com.resukisu.resukisu.ui.component.miuix.animation.DampedDragAnimation
 import com.resukisu.resukisu.ui.component.miuix.animation.InteractiveHighlight
 import com.resukisu.resukisu.ui.theme.ThemeConfig
 import com.resukisu.resukisu.ui.theme.isInDarkTheme
+import com.resukisu.resukisu.ui.util.LocalBlurState
 import org.koin.compose.koinInject
 import top.yukonga.miuix.kmp.blur.Backdrop
 import top.yukonga.miuix.kmp.blur.blur
@@ -75,8 +77,6 @@ import top.yukonga.miuix.kmp.blur.highlight.LightSource
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import top.yukonga.miuix.kmp.blur.sensor.rememberDeviceTilt
-import top.yukonga.miuix.kmp.theme.LocalContentColor
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
@@ -181,9 +181,7 @@ fun FloatingBottomBar(
     modifier: Modifier = Modifier,
     selectedIndex: () -> Int,
     onSelected: (index: Int) -> Unit,
-    backdrop: Backdrop,
     tabsCount: Int,
-    isBlurEnabled: Boolean = true,
     content: @Composable RowScope.() -> Unit
 ) {
     val themeConfig: ThemeConfig = koinInject()
@@ -293,7 +291,7 @@ fun FloatingBottomBar(
     val baseHighlight = rememberGravityRotatedHighlight(iosIndicatorSpecular, extraDegrees = -45f)
     val pillHighlight = rememberGravityRotatedHighlight(iosIndicatorSpecular, extraDegrees = 90f)
 
-    val combinedBackdrop = rememberCombinedBackdrop(backdrop, tabsBackdrop)
+    val combinedBackdrop = rememberCombinedBackdrop(LocalBlurState.current ?: rememberLayerBackdrop(), tabsBackdrop)
 
     Box(
         modifier = modifier.width(IntrinsicSize.Min),
@@ -321,9 +319,9 @@ fun FloatingBottomBar(
                     onClick = {}
                 )
                 .then(
-                    if (isBlurEnabled) {
+                    if (LocalBlurState.current != null) {
                         Modifier.drawBackdrop(
-                            backdrop = backdrop,
+                            backdrop = LocalBlurState.current ?: rememberLayerBackdrop(),
                             shape = { pillShape },
                             effects = {
                                 vibrancy()
@@ -346,7 +344,7 @@ fun FloatingBottomBar(
                         Modifier.background(containerColor, pillShape)
                     }
                 )
-                .then(if (isBlurEnabled) interactiveHighlight.modifier else Modifier)
+                .then(if (LocalBlurState.current != null) interactiveHighlight.modifier else Modifier)
                 .height(64.dp)
                 .padding(4.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -356,7 +354,7 @@ fun FloatingBottomBar(
             }
         }
 
-        if (isBlurEnabled) {
+        if (LocalBlurState.current != null) {
             CompositionLocalProvider(
                 LocalFloatingBottomBarTabScale provides {
                     lerp(1f, 1.2f, dampedDragAnimation.pressProgress)
@@ -370,7 +368,7 @@ fun FloatingBottomBar(
                         .layerBackdrop(tabsBackdrop)
                         .graphicsLayer { translationX = panelOffset }
                         .drawBackdrop(
-                            backdrop = backdrop,
+                            backdrop = LocalBlurState.current ?: rememberLayerBackdrop(),
                             shape = { pillShape },
                             effects = {
                                 vibrancy()
@@ -393,7 +391,7 @@ fun FloatingBottomBar(
 
         if (tabWidthPx > 0f) {
             val tabWidthDp = with(density) { tabWidthPx.toDp() }
-            if (isBlurEnabled) {
+            if (LocalBlurState.current != null) {
                 Box(
                     Modifier
                         .padding(horizontal = 4.dp)
