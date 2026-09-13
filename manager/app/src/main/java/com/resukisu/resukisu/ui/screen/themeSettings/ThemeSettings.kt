@@ -41,6 +41,7 @@ import androidx.compose.material.icons.twotone.ColorLens
 import androidx.compose.material.icons.twotone.Contrast
 import androidx.compose.material.icons.twotone.DarkMode
 import androidx.compose.material.icons.twotone.DesignServices
+import androidx.compose.material.icons.twotone.Dock
 import androidx.compose.material.icons.twotone.Draw
 import androidx.compose.material.icons.twotone.FormatColorFill
 import androidx.compose.material.icons.twotone.FormatSize
@@ -606,18 +607,6 @@ private fun AppearanceSettings(
             }
         }
 
-        item(visible = isPortrait) {
-            SettingsSwitchWidget(
-                title = stringResource(R.string.enable_floating_bottom_bar),
-                description = stringResource(R.string.enable_floating_bottom_bar_summary),
-                checked = themeConfig.bottomBarStyle == BottomBarStyle.FLOATING,
-                onCheckedChange = { enabled ->
-                    val style = if (enabled) BottomBarStyle.FLOATING else BottomBarStyle.MATERIAL3_EXPRESSIVE
-                    backgroundManager.saveBottomBarStyle(style)
-                }
-            )
-        }
-
         item(visible = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             SettingsSwitchWidget(
                 icon = Icons.TwoTone.BlurOn,
@@ -628,6 +617,19 @@ private fun AppearanceSettings(
                     backgroundManager.saveEnableBlur(isChecked)
                     if (!isChecked)
                         backgroundManager.saveEnableBlurExp(false)
+                }
+            )
+        }
+
+        item(visible = isPortrait) {
+            SettingsSwitchWidget(
+                icon = Icons.TwoTone.Dock,
+                title = stringResource(R.string.enable_floating_bottom_bar),
+                description = stringResource(R.string.enable_floating_bottom_bar_summary),
+                checked = themeConfig.bottomBarStyle == BottomBarStyle.FLOATING,
+                onCheckedChange = { enabled ->
+                    val style = if (enabled) BottomBarStyle.FLOATING else BottomBarStyle.MATERIAL3_EXPRESSIVE
+                    backgroundManager.saveBottomBarStyle(style)
                 }
             )
         }

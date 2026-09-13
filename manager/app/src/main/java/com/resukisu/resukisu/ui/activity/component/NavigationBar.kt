@@ -90,13 +90,15 @@ fun NavigationBar(
             contentAlignment = Alignment.Center
         ) {
             FloatingBottomBar(
-                selectedIndex = { pagerState.targetPage },
+                selectedIndex = pagerState.targetPage,
                 onSelected = { handlePageChange(it) },
                 tabsCount = destinations.size,
-            ) {
+                isBlurEnabled = LocalBlurState.current != null,
+            ) { activateTab ->
                 destinations.forEachIndexed { index, destination ->
                     FloatingBottomBarItem(
-                        onClick = { handlePageChange(index) },
+                        selected = index == pagerState.targetPage,
+                        onClick = { activateTab(index) },
                         modifier = Modifier.defaultMinSize(minWidth = 76.dp)
                     ) {
                         val contentColor = LocalContentColor.current
