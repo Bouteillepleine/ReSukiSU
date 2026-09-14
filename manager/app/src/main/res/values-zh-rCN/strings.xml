@@ -208,6 +208,8 @@
     <string name="background_crop_rotation_angle">旋转角度</string>
     <string name="settings_config_enable_blur">启用模糊</string>
     <string name="settings_config_enable_blur_summary">对此 App 启用模糊处理</string>
+    <string name="enable_floating_bottom_bar">悬浮底栏</string>
+    <string name="enable_floating_bottom_bar_summary">使用 Apple 风格的悬浮底栏</string>
     <string name="settings_exp_draw_background_to_blur">将自定义背景渲染到模糊</string>
     <string name="settings_exp_draw_background_to_blur_description">实验性功能，后果自负</string>
     <string name="settings_config_use_custom_background_seed_color">从自定义背景图片中取色</string>
