@@ -1,6 +1,7 @@
 package com.resukisu.resukisu.ui.activity.component
 
 import android.annotation.SuppressLint
+import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -76,7 +77,7 @@ fun NavigationBar(
     val handlePageChange = LocalHandlePageChange.current
     val pagerState = LocalPagerState.current
 
-    if (isBottomBar && themeConfig.bottomBarStyle == BottomBarStyle.FLOATING) {
+    if (isBottomBar && themeConfig.bottomBarStyle == BottomBarStyle.FLOATING && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
