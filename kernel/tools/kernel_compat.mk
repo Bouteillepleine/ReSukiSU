@@ -24,11 +24,6 @@ $(info -- $(REPO_NAME)/compat: kernel_write found)
 ccflags-y += -DKSU_OPTIONAL_KERNEL_WRITE
 endif
 
-ifeq ($(shell grep -q "int\s\+path_umount" $(srctree)/fs/namespace.c; echo $$?),0)
-$(info -- $(REPO_NAME)/compat: path_umount found)
-ccflags-y += -DKSU_HAS_PATH_UMOUNT
-endif
-
 ifeq ($(shell grep -q "inode_security_struct\s\+\*selinux_inode" $(srctree)/security/selinux/include/objsec.h; echo $$?),0)
 $(info -- $(REPO_NAME)/compat: selinux_inode found)
 ccflags-y += -DKSU_OPTIONAL_SELINUX_INODE
